@@ -1,8 +1,4 @@
-export default async function IndexPage({
-  searchParams
-}: {
-  searchParams: { q: string }
-}) {
+export default async function IndexPage() {
   return (
     <>
       Welcome to World System! This is the landing page.

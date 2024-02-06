@@ -1,82 +1,69 @@
 generator client {
-    provider = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-    provider  = "postgresql"
-    url       = env("POSTGRES_PRISMA_URL") // uses connection pooling
-    directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
+  provider  = "postgresql"
+  url       = env("POSTGRES_PRISMA_URL")
+  directUrl = env("POSTGRES_URL_NON_POOLING")
 }
 
 model User {
-    id            String    @id @default(cuid())
-    name          String?
-    email         String?   @unique
-    password      String?
-    emailVerified DateTime?
-    image         String?
-    createdAt     DateTime  @default(now())
-    updatedAt     DateTime  @updatedAt
-
-    permissions Permission[]
+  id            String       @id @default(cuid())
+  name          String?
+  email         String?      @unique
+  password      String?
+  emailVerified DateTime?
+  image         String?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  permissions   Permission[]
 }
 
 model Project {
-    id   String  @id @default(cuid())
-    name String?
-
-    permissions Permission[]
-
-    maps      Map[]
-    locations Location[]
+  id          String       @id @default(cuid())
+  name        String?
+  locations   Location[]
+  maps        Map[]
+  permissions Permission[]
 }
 
 model Permission {
-    id              String @id @default(cuid())
-    permissionLevel Int?
-
-    user   User?   @relation(fields: [userId], references: [id])
-    userId String?
-
-    project   Project? @relation(fields: [projectId], references: [id])
-    projectId String?
+  id              String   @id @default(cuid())
+  permissionLevel Int?
+  userId          String?
+  projectId       String?
+  project         Project? @relation(fields: [projectId], references: [id])
+  user            User?    @relation(fields: [userId], references: [id])
 }
 
 model Map {
-    id        Int      @id @default(autoincrement())
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-    name      String
-
-    project   Project? @relation(fields: [projectId], references: [id])
-    projectId String?
-
-    positionsOnMap PositionOnMap[]
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  id             Int            @id @default(autoincrement())
+  name           String
+  projectId      String?
+  project        Project?       @relation(fields: [projectId], references: [id])
+  positionsOnMap PositionOnMap?
 }
 
 model Location {
-    id        Int      @id @default(autoincrement())
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-    name      String
-
-    parentId Int?
-    children Location[] @relation("NestedLocations")
-    parent   Location?  @relation("NestedLocations", fields: [parentId], references: [id])
-
-    project   Project? @relation(fields: [projectId], references: [id])
-    projectId String?
-
-    positionsOnMap PositionOnMap[]
+  id             Int             @id @default(autoincrement())
+  parentId       Int?
+  createdAt      DateTime        @default(now())
+  name           String
+  projectId      String?
+  updatedAt      DateTime        @updatedAt
+  parent         Location?       @relation("NestedLocations", fields: [parentId], references: [id])
+  children       Location[]      @relation("NestedLocations")
+  project        Project?        @relation(fields: [projectId], references: [id])
+  positionsOnMap PositionOnMap[]
 }
 
-// Contains location details for specific map
 model PositionOnMap {
-    id String @id @default(cuid())
-
-    map   Map @relation(fields: [mapId], references: [id])
-    mapId Int @unique
-
-    location   Location @relation(fields: [locationId], references: [id])
-    locationId Int
+  id         String   @id @default(cuid())
+  mapId      Int      @unique
+  locationId Int
+  location   Location @relation(fields: [locationId], references: [id])
+  map        Map      @relation(fields: [mapId], references: [id])
 }

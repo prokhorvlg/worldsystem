@@ -8,7 +8,6 @@ import {
   Group,
   Checkbox,
   Button,
-  PaperProps,
   Divider,
   Stack
 } from '@mantine/core'
@@ -18,7 +17,7 @@ import { signIn } from 'next-auth/react'
 import { redirect } from 'next/navigation'
 import { Container } from 'postcss'
 
-export default function Login(props: PaperProps) {
+export default function Login() {
   const [type, toggle] = useToggle(['login', 'register'])
   const form = useForm({
     initialValues: {
@@ -36,7 +35,7 @@ export default function Login(props: PaperProps) {
   })
 
   return (
-    <Paper radius="md" p="xl" withBorder {...props}>
+    <Paper radius="md" p="xl" withBorder>
       <Group grow mb="md" mt="md">
         {/* <GoogleButton radius="xl">Google</GoogleButton>
         <TwitterButton radius="xl">Twitter</TwitterButton> */}
@@ -62,9 +61,9 @@ export default function Login(props: PaperProps) {
           } else {
             const res = await signIn('credentials', {
               email: formContents.email,
-              password: formContents.password
-              // callbackUrl: `http://localhost:3000/dashboard`,
-              // redirect: true
+              password: formContents.password,
+              callbackUrl: `http://localhost:3000/dashboard`,
+              redirect: true
             })
 
             if (res && res.ok) {

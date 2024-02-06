@@ -2,8 +2,9 @@ import '@/styles/globals.css'
 import '@mantine/core/styles.css'
 
 import { getServerSession } from 'next-auth'
-import SessionProvider from './SessionProvider'
+import SessionProvider from '../components/_providers/SessionProvider'
 import { ColorSchemeScript, MantineProvider } from '@mantine/core'
+import QueryProvider from '@/components/_providers/QueryProvider'
 
 export const metadata = {
   title: 'Worldsystem',
@@ -24,11 +25,13 @@ export default async function RootLayout({
         <ColorSchemeScript />
       </head>
       <body className="h-full">
-        <SessionProvider session={session}>
-          <MantineProvider defaultColorScheme="dark">
-            {children}
-          </MantineProvider>
-        </SessionProvider>
+        <QueryProvider>
+          <SessionProvider session={session}>
+            <MantineProvider defaultColorScheme="dark">
+              {children}
+            </MantineProvider>
+          </SessionProvider>
+        </QueryProvider>
       </body>
     </html>
   )

@@ -32,9 +32,9 @@ const options: NextAuthOptions = {
               'Content-Type': 'application/json'
             }
           })
-          console.log('RES GOTTEN', res)
+
           const user = await res.json()
-          console.log('USER-', user)
+          console.log('USER IS', user)
 
           if (res.ok && user) {
             return user
@@ -50,6 +50,39 @@ const options: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
   secret: process.env.NEXTAUTH_SECRET,
   session: { strategy: 'jwt' },
+  jwt: {
+    maxAge: 60 * 60 * 24 * 30
+  },
+
+  callbacks: {
+    // async session({session, token}) {
+    //   session.id = token.id;
+    //   session.userName = token.userName;
+    //   return session;
+    // }
+    // async jwt({ token, user, account, profile }) {
+    //   user && (token.user = user)
+    //   return token
+    // },
+    async jwt({ token, user }) {
+      console.log('JWT GET USER', user)
+      if (user) {
+        token.id = user.id
+      }
+      return token
+    },
+    async session({ session, token, user }) {
+      console.log('SESSION GET USER', user)
+      // const sessionAdjusted = {
+      //   ...session,
+      //   user: {
+      //     id: user.id,
+      //     ...session.user
+      //   }
+      // }
+      return session
+    }
+  },
 
   pages: {
     signIn: '/login',

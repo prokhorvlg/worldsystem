@@ -1,3 +1,5 @@
-export default async function HomePage({ params }: { params: { id: string } }) {
-  return <div>This is a page!</div>
+import DashboardHome from '@/components/dashboard/DashboardHome'
+
+export default async function HomePage() {
+  return <DashboardHome />
 }

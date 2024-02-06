@@ -3,21 +3,25 @@ import { getHashedPassword } from '@/utils/crypto'
 import { Prisma } from '@prisma/client'
 
 // (C) CREATE USER
-export async function PUT(request: Request, response: any) {
+export async function PUT(request: Request) {
   const body = await request.json()
 
   try {
     const user = await prisma.user.create({
       data: {
+        id: body?.id,
         email: body?.email,
         name: body?.name,
         password: getHashedPassword(body.password || '')
       }
     })
-    return response.status(201).json({ user })
+
+    return new Response(JSON.stringify(user), {
+      status: 201
+    })
   } catch (e) {
-    if (e instanceof Prisma.PrismaClientKnownRequestError) {
-      return response.status(400).json({ message: e.message })
-    }
+    return new Response((e as Prisma.PrismaClientKnownRequestError).message, {
+      status: 400
+    })
   }
 }

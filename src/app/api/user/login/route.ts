@@ -29,11 +29,11 @@ export async function POST(request: Request) {
       return new Response(JSON.stringify(exclude(user, ['password'])), {
         status: 200
       })
-    } else {
-      return new Response('Invalid credentials.', {
-        status: 401
-      })
     }
+
+    return new Response('Invalid credentials.', {
+      status: 401
+    })
   } catch (e: any) {
     throw new Error(e)
   }

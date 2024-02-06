@@ -1,12 +1,16 @@
 import { getMaps } from '@/services/maps/maps'
-import useSWR from 'swr'
+import { useQuery } from '@tanstack/react-query'
 
-export const useMaps = (id: any) => {
-  const { data, error, isLoading } = useSWR(`/api/user/${id}`, getMaps)
+export const useMaps = () => {
+  const { data, error, isLoading } = useQuery({
+    queryKey: ['maps'],
+    queryFn: getMaps,
+    retry: false
+  })
 
   return {
-    user: data,
+    maps: data,
     isLoading,
-    isError: error
+    error
   }
 }
