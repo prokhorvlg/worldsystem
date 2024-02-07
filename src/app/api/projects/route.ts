@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma'
+import { StatusCode } from '@/types/apiTypes'
 import { getToken } from 'next-auth/jwt'
 
 const secret = process.env.NEXTAUTH_SECRET
@@ -11,18 +12,7 @@ export async function GET(request: Request) {
     })
   }
 
-  console.log('JSON Web Token', token.id)
-
   try {
-    // const projects = await prisma.map.findMany()
-
-    // const projects = await prisma.project.findMany({
-    //   relationLoadStrategy: 'join',
-    //   where: {
-    //     userId: ''
-    //   },
-    // })
-
     const user = await prisma.user.findUnique({
       where: {
         id: token.id as string
@@ -35,8 +25,6 @@ export async function GET(request: Request) {
         }
       }
     })
-
-    console.log(user)
 
     if (!user) return
 
@@ -52,42 +40,43 @@ export async function GET(request: Request) {
   }
 }
 
+export interface CreateProjectBody {
+  name: string
+}
+
 export async function POST(request: Request) {
-  console.log('PROJECTS API HIT', request)
+  const body: CreateProjectBody = await request.json()
+
   const token = await getToken({ req: request as any, secret })
   if (!token) {
     return new Response('No token found in request.', {
-      status: 401
+      status: StatusCode.Unauthorized
     })
   }
 
-  console.log('JSON Web Token', token.id)
   const userId = token.id as string
 
   try {
     const project = await prisma.project.create({
       data: {
-        name: 'Elsa Prisma'
+        name: body.name
       }
     })
 
-    console.log('CREATED PROJECT', project)
-
-    const permission = await prisma.permission.create({
+    // Create permission to link user with project
+    await prisma.permission.create({
       data: {
         userId: userId,
         projectId: project.id
       }
     })
 
-    console.log('CREATED PERMISSION', permission)
-
     return new Response(JSON.stringify(project), {
-      status: 200
+      status: StatusCode.OK
     })
   } catch (e) {
-    return new Response('Failed.', {
-      status: 405
+    return new Response((e as any).message || 'Database error.', {
+      status: StatusCode.ServerError
     })
   }
 }

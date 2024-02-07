@@ -1,3 +1,6 @@
+import { CreateProjectBody } from '@/app/api/projects/route'
+import { Method } from '@/types/apiTypes'
+
 export const getProjectsAPI = async () => {
   const res = await fetch('/api/projects')
 
@@ -9,10 +12,14 @@ export const getProjectsAPI = async () => {
   return res.json()
 }
 
-export const createProjectAPI = async (newProject: any) => {
+export const createProjectAPI = async (name: string) => {
+  const body: CreateProjectBody = {
+    name: name
+  }
+
   const res = await fetch('/api/projects', {
-    method: 'POST',
-    body: JSON.stringify({})
+    method: Method.POST,
+    body: JSON.stringify(body)
   })
 
   if (!res.ok) {

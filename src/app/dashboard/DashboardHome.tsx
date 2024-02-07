@@ -1,8 +1,6 @@
 'use client'
 import { SideNav } from '@/components/dashboard/SideNav'
 import { useProjects } from '@/services/projects/useProjects'
-import { useQueryClient } from '@tanstack/react-query'
-import { Session } from 'next-auth'
 import { useSession } from 'next-auth/react'
 import { useEffect } from 'react'
 
@@ -18,9 +16,9 @@ const DashboardHome = () => {
 
     console.log('projects', projects)
 
-    // if (projects.length === 0) {
-    //   createProject({ name: 'my new project' })
-    // }
+    if (projects.length === 0) {
+      createProject({ name: 'my new project' })
+    }
   }, [])
 
   // Create a record in permissions indicating this user is owner

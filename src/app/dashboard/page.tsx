@@ -1,4 +1,4 @@
-import DashboardHome from '@/components/dashboard/DashboardHome'
+import DashboardHome from '@/app/dashboard/DashboardHome'
 
 export default async function HomePage() {
   return <DashboardHome />

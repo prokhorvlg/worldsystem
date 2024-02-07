@@ -55,31 +55,13 @@ const options: NextAuthOptions = {
   },
 
   callbacks: {
-    // async session({session, token}) {
-    //   session.id = token.id;
-    //   session.userName = token.userName;
-    //   return session;
-    // }
-    // async jwt({ token, user, account, profile }) {
-    //   user && (token.user = user)
-    //   return token
-    // },
     async jwt({ token, user }) {
-      console.log('JWT GET USER', user)
       if (user) {
         token.id = user.id
       }
       return token
     },
     async session({ session, token, user }) {
-      console.log('SESSION GET USER', user)
-      // const sessionAdjusted = {
-      //   ...session,
-      //   user: {
-      //     id: user.id,
-      //     ...session.user
-      //   }
-      // }
       return session
     }
   },
