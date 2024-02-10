@@ -1,4 +1,7 @@
-import { getProjectsAPI, createProjectAPI } from '@/services/projects/projects'
+import {
+  getProjectsAPI,
+  createProjectAPI
+} from '@/services/projects/projectsAPI'
 import {
   QueryClient,
   useMutation,

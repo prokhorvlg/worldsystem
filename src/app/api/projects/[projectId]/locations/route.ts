@@ -1,12 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import { StatusCode } from '@/types/apiTypes'
-import { getToken } from 'next-auth/jwt'
-
-const secret = process.env.NEXTAUTH_SECRET
-
-export interface GetLocationsBody {
-  projectId: string
-}
+import { PrismaLocation, PrismaMapNode } from '@/types/prismaTypes'
 
 export async function GET(request: Request, context: any) {
   const projectId = context.params.projectId
@@ -17,16 +11,10 @@ export async function GET(request: Request, context: any) {
         id: projectId
       },
       include: {
-        locations: {
-          include: {
-            positionsOnMap: {}
-          }
-        }
+        locations: true
       }
     })
     if (!project) return
-
-    console.log('project.locations:', project.locations)
 
     return new Response(JSON.stringify(project.locations), {
       status: StatusCode.OK
@@ -38,13 +26,22 @@ export async function GET(request: Request, context: any) {
   }
 }
 
-export interface CreateLocationBody {
+export interface CreateLocationRequest {
   projectId: string
   name: string
+
+  isMapLocation?: boolean // is this being created on the map?
+  mapId: number // which map is it created on?
+  parentMapNodeId?: string // what is the parent? doesn't need one though
+}
+
+export interface CreateLocationResponse {
+  location: PrismaLocation
+  mapNode: PrismaMapNode | undefined
 }
 
 export async function POST(request: Request) {
-  const body: CreateLocationBody = await request.json()
+  const body: CreateLocationRequest = await request.json()
 
   try {
     const location = await prisma.location.create({
@@ -54,7 +51,23 @@ export async function POST(request: Request) {
       }
     })
 
-    return new Response(JSON.stringify(location), {
+    let mapNode
+    if (body.isMapLocation) {
+      mapNode = await prisma.mapNode.create({
+        data: {
+          mapId: body.mapId,
+          locationId: location.id,
+          parentId: body.parentMapNodeId ?? undefined
+        }
+      })
+    }
+
+    const response: CreateLocationResponse = {
+      location,
+      mapNode
+    }
+
+    return new Response(JSON.stringify(response), {
       status: StatusCode.OK
     })
   } catch (e) {

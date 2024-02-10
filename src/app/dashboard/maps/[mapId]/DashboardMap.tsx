@@ -1,11 +1,9 @@
 'use client'
 
 import { SideNav } from '@/components/dashboard/SideNav'
-import { SortableTree } from '@/components/dashboard/SortableTree'
-import { useLocations } from '@/services/locations/useLocations'
+import { SortableTree } from '@/components/dashboard/map/SortableTree'
 import { useMaps } from '@/services/maps/useMaps'
 import { useSession } from 'next-auth/react'
-import { useEffect } from 'react'
 
 const Wrapper = ({ children }: { children: React.ReactNode }) => (
   <div
@@ -22,29 +20,42 @@ const Wrapper = ({ children }: { children: React.ReactNode }) => (
 
 const DashboardMap = ({ mapId }: { mapId: number }) => {
   const { data: session } = useSession()
-  const { maps, error, isLoading } = useMaps()
-  const { locations, createLocation } = useLocations()
+  const { map, mapNodes, updateMapNode } = useMaps({ mapId })
 
-  const selectedMap =
-    !isLoading && maps ? maps.find((map) => map.id === mapId) : undefined
-
-  if (isLoading) return <>loading</>
-  if (error) return <>error</>
-  if (!selectedMap) return <>Failed to find map.</>
+  if (!map) return <>map does not exist!</>
 
   return (
     <section className="flex flex-row h-full">
       <SideNav user={session?.user} />
-      <div>{selectedMap.name}</div>
+      <div>{map.name}</div>
       <Wrapper>
-        <SortableTree collapsible indicator removable />
+        <SortableTree
+          collapsible
+          indicator
+          removable
+          defaultItems={mapNodes ?? []}
+          onDragEnd={(id: string, newParentId: string | null) =>
+            // console.log(
+            //   'DRAG ENDED. THIS ID:',
+            //   id,
+            //   'NEW PARENT IS',
+            //   newParentId
+            // )
+            updateMapNode({
+              id: id,
+              body: {
+                parentId: newParentId
+              }
+            })
+          }
+        />
       </Wrapper>
-      <ul>
+      {/* <ul>
         {locations?.map((location) => (
           <li key={location.id}>{location.name}</li>
         ))}
       </ul>
-      <button onClick={() => createLocation()}>Add Location</button>
+      <button onClick={() => createLocation()}>Add Location</button> */}
     </section>
   )
 }

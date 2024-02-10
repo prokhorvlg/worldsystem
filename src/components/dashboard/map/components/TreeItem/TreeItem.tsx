@@ -6,7 +6,7 @@ import {
   Action,
   Handle,
   Remove
-} from '@/components/dashboard/components/TreeItem/Item'
+} from '@/components/dashboard/map/components/TreeItem/Item'
 
 export interface Props extends Omit<HTMLAttributes<HTMLLIElement>, 'id'> {
   childCount?: number

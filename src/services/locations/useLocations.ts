@@ -1,8 +1,8 @@
+import { CreateLocationRequest } from '@/app/api/projects/[projectId]/locations/route'
 import {
   createLocationAPI,
   getLocationsAPI
-} from '@/services/locations/locations'
-import { createMapAPI, getMapsAPI } from '@/services/maps/maps'
+} from '@/services/locations/locationsAPI'
 import { useProjects } from '@/services/projects/useProjects'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
@@ -25,8 +25,8 @@ export const useLocations = () => {
 
   const { mutate: createLocation } = useMutation({
     retry: false,
-    mutationFn: () => {
-      return createLocationAPI(projectId, "Kim's Location")
+    mutationFn: (body: CreateLocationRequest) => {
+      return createLocationAPI(body)
     },
     onSuccess: (res: any) => {
       queryClient.invalidateQueries({ queryKey: ['locations'] })

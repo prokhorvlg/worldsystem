@@ -1,10 +1,9 @@
-import { CreateLocationBody } from '@/app/api/projects/[projectId]/locations/route'
 import {
-  CreateMapBody,
-  GetMapsBody
-} from '@/app/api/projects/[projectId]/maps/route'
+  CreateLocationRequest,
+  CreateLocationResponse
+} from '@/app/api/projects/[projectId]/locations/route'
 import { Method } from '@/types/apiTypes'
-import { PrismaLocation, PrismaMap } from '@/types/prismaTypes'
+import { PrismaLocation } from '@/types/prismaTypes'
 
 export const getLocationsAPI = async (
   projectId: string
@@ -25,13 +24,10 @@ export const getLocationsAPI = async (
   }
 }
 
-export const createLocationAPI = async (projectId: string, name: string) => {
-  const body: CreateLocationBody = {
-    projectId,
-    name
-  }
-
-  const res = await fetch(`/api/projects/${projectId}/locations`, {
+export const createLocationAPI = async (
+  body: CreateLocationRequest
+): Promise<CreateLocationResponse | undefined> => {
+  const res = await fetch(`/api/projects/${body.projectId}/locations`, {
     method: Method.POST,
     body: JSON.stringify(body)
   })

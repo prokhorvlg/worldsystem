@@ -38,34 +38,32 @@ model Permission {
 }
 
 model Map {
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
-  id                Int                @id @default(autoincrement())
-  name              String
-  projectId         String?
-  project           Project?           @relation(fields: [projectId], references: [id])
-  locationPositions LocationPosition[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  id        Int       @id @default(autoincrement())
+  name      String
+  projectId String?
+  project   Project?  @relation(fields: [projectId], references: [id])
+  mapNodes  MapNode[]
 }
 
 model Location {
-  id                Int                @id @default(autoincrement())
-  createdAt         DateTime           @default(now())
-  name              String
-  projectId         String?
-  updatedAt         DateTime           @updatedAt
-  project           Project?           @relation(fields: [projectId], references: [id])
-  locationPositions LocationPosition[]
+  id        Int       @id @default(autoincrement())
+  createdAt DateTime  @default(now())
+  name      String
+  projectId String?
+  updatedAt DateTime  @updatedAt
+  project   Project?  @relation(fields: [projectId], references: [id])
+  mapNodes  MapNode[]
 }
 
-model LocationPosition {
-  id String @id @default(cuid())
-
+model MapNode {
+  id         String    @id @default(cuid())
   locationId Int
-  mapId      Int      @unique
-  location   Location @relation(fields: [locationId], references: [id])
-  map        Map      @relation(fields: [mapId], references: [id])
-
-  parentId String?
-  parent   LocationPosition?  @relation("NestedLocations", fields: [parentId], references: [id])
-  children LocationPosition[] @relation("NestedLocations")
+  mapId      Int
+  parentId   String?
+  location   Location  @relation(fields: [locationId], references: [id])
+  map        Map       @relation(fields: [mapId], references: [id])
+  parent     MapNode?  @relation("NestedLocations", fields: [parentId], references: [id])
+  children   MapNode[] @relation("NestedLocations")
 }

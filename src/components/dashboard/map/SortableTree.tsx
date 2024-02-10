@@ -18,8 +18,7 @@ import {
   MeasuringStrategy,
   DropAnimation,
   Modifier,
-  defaultDropAnimation,
-  UniqueIdentifier
+  defaultDropAnimation
 } from '@dnd-kit/core'
 import {
   SortableContext,
@@ -103,6 +102,7 @@ interface Props {
   indentationWidth?: number
   indicator?: boolean
   removable?: boolean
+  onDragEnd?: (id: string, newParentId: string) => void
 }
 
 export function SortableTree({
@@ -110,15 +110,16 @@ export function SortableTree({
   defaultItems = initialItems,
   indicator = false,
   indentationWidth = 50,
-  removable
+  removable,
+  onDragEnd
 }: Props) {
   const [items, setItems] = useState(() => defaultItems)
-  const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null)
-  const [overId, setOverId] = useState<UniqueIdentifier | null>(null)
+  const [activeId, setActiveId] = useState<string | null>(null)
+  const [overId, setOverId] = useState<string | null>(null)
   const [offsetLeft, setOffsetLeft] = useState(0)
   const [currentPosition, setCurrentPosition] = useState<{
-    parentId: UniqueIdentifier | null
-    overId: UniqueIdentifier
+    parentId: string | null
+    overId: string
   } | null>(null)
 
   const flattenedItems = useMemo(() => {
@@ -175,16 +176,31 @@ export function SortableTree({
 
   const announcements: Announcements = {
     onDragStart({ active }) {
+      console.log('onDragStart!', active?.id)
       return `Picked up ${active.id}.`
     },
     onDragMove({ active, over }) {
-      return getMovementAnnouncement('onDragMove', active.id, over?.id)
+      return getMovementAnnouncement(
+        'onDragMove',
+        active.id as string,
+        over?.id as string
+      )
     },
     onDragOver({ active, over }) {
-      return getMovementAnnouncement('onDragOver', active.id, over?.id)
+      // console.log('onDragOver!', active?.id, over?.id)
+
+      return getMovementAnnouncement(
+        'onDragOver',
+        active.id as string,
+        over?.id as string
+      )
     },
     onDragEnd({ active, over }) {
-      return getMovementAnnouncement('onDragEnd', active.id, over?.id)
+      return getMovementAnnouncement(
+        'onDragEnd',
+        active.id as string,
+        over?.id as string
+      )
     },
     onDragCancel({ active }) {
       return `Moving was cancelled. ${active.id} was dropped in its original position.`
@@ -244,15 +260,15 @@ export function SortableTree({
   )
 
   function handleDragStart({ active: { id: activeId } }: DragStartEvent) {
-    setActiveId(activeId)
-    setOverId(activeId)
+    setActiveId(activeId as string)
+    setOverId(activeId as string)
 
     const activeItem = flattenedItems.find(({ id }) => id === activeId)
 
     if (activeItem) {
       setCurrentPosition({
         parentId: activeItem.parentId,
-        overId: activeId
+        overId: activeId as string
       })
     }
 
@@ -264,7 +280,7 @@ export function SortableTree({
   }
 
   function handleDragOver({ over }: DragOverEvent) {
-    setOverId(over?.id ?? null)
+    setOverId((over?.id as string) ?? null)
   }
 
   function handleDragEnd({ active, over }: DragEndEvent) {
@@ -272,6 +288,10 @@ export function SortableTree({
 
     if (projected && over) {
       const { depth, parentId } = projected
+
+      if (onDragEnd) onDragEnd(active.id as string, parentId as string)
+
+      console.log('handleDragEnd!', parentId)
       const clonedItems: FlattenedItem[] = JSON.parse(
         JSON.stringify(flattenTree(items))
       )
@@ -301,11 +321,11 @@ export function SortableTree({
     document.body.style.setProperty('cursor', '')
   }
 
-  function handleRemove(id: UniqueIdentifier) {
+  function handleRemove(id: string) {
     setItems((items) => removeItem(items, id))
   }
 
-  function handleCollapse(id: UniqueIdentifier) {
+  function handleCollapse(id: string) {
     setItems((items) =>
       setProperty(items, id, 'collapsed', (value) => {
         return !value
@@ -315,8 +335,8 @@ export function SortableTree({
 
   function getMovementAnnouncement(
     eventName: string,
-    activeId: UniqueIdentifier,
-    overId?: UniqueIdentifier
+    activeId: string,
+    overId?: string
   ) {
     if (overId && projected) {
       if (eventName !== 'onDragEnd') {
@@ -356,7 +376,7 @@ export function SortableTree({
         } else {
           let previousSibling: FlattenedItem | undefined = previousItem
           while (previousSibling && projected.depth < previousSibling.depth) {
-            const parentId: UniqueIdentifier | null = previousSibling.parentId
+            const parentId: string | null = previousSibling.parentId
             previousSibling = sortedItems.find(({ id }) => id === parentId)
           }
 

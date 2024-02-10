@@ -18,4 +18,4 @@ export type PrismaPermission = PrismaModels['Permission']
 
 export type PrismaMap = PrismaModels['Map']
 export type PrismaLocation = PrismaModels['Location']
-export type PrismaPositionOnMap = PrismaModels['PositionOnMap']
+export type PrismaMapNode = PrismaModels['MapNode']

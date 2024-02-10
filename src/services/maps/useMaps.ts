@@ -1,50 +1,109 @@
-import { createMapAPI, getMapsAPI } from '@/services/maps/maps'
+import { MapNodeRoot } from '@/app/api/projects/[projectId]/maps/[mapId]/mapNodes/route'
 import { useProjects } from '@/services/projects/useProjects'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { Method } from '@/types/apiTypes'
+import { PrismaMap, PrismaMapNode } from '@/types/prismaTypes'
+import {
+  useMutation,
+  useQueries,
+  useQuery,
+  useQueryClient
+} from '@tanstack/react-query'
 
-export const useMaps = () => {
+const getMapsAPI = (projectId: string): Promise<PrismaMap[]> => {
+  return fetch(`/api/projects/${projectId}/maps`, {
+    method: Method.GET
+  }).then((data) => data.json())
+}
+
+const createMapAPI = (
+  projectId: string,
+  body: Partial<PrismaMap>
+): Promise<PrismaMap> => {
+  return fetch(`/api/projects/${projectId}/maps`, {
+    method: Method.POST,
+    body: JSON.stringify(body)
+  }).then((data) => data.json())
+}
+
+const getMapNodesAPI = (
+  projectId: string,
+  mapId: number
+): Promise<MapNodeRoot[]> => {
+  return fetch(`/api/projects/${projectId}/maps/${mapId}/mapNodes`, {
+    method: Method.GET
+  }).then((data) => data.json())
+}
+
+const updateMapNodeAPI = (
+  projectId: string,
+  mapId: number,
+  mapNodeId: string,
+  body: Partial<PrismaMapNode>
+): Promise<MapNodeRoot[]> => {
+  return fetch(
+    `/api/projects/${projectId}/maps/${mapId}/mapNodes/${mapNodeId}`,
+    {
+      method: Method.PUT,
+      body: JSON.stringify(body)
+    }
+  ).then((data) => data.json())
+}
+
+export const useMaps = ({ mapId }: { mapId?: number }) => {
   const queryClient = useQueryClient()
+
+  // For now, first project is always active. This may change later.
   const { projects } = useProjects()
   const projectId = projects ? projects[0].id : undefined
-  // For now, first project is always active. This may change later.
 
-  // console.log('projectId console log in hook??', projectId)
-
-  const {
-    data: maps,
-    error,
-    isLoading
-  } = useQuery({
+  // Fetch all maps
+  const { data: maps } = useQuery({
     queryKey: ['maps'],
-    queryFn: async () => await getMapsAPI(projectId),
+    queryFn: () => getMapsAPI(projectId),
     retry: false,
     enabled: !!projectId
   })
 
+  // Create map
   const { mutate: createMap } = useMutation({
     retry: false,
-    mutationFn: () => {
-      return createMapAPI(projectId, "Kim's New Map")
-    },
-    onSuccess: (res: any) => {
-      console.log(res)
-      queryClient.invalidateQueries({ queryKey: ['maps'] })
-    }
+    mutationFn: (body: Partial<PrismaMap>) => createMapAPI(projectId, body)
+    // TODO: insert new map into query
   })
 
-  // const {
-  //   data: locationPositions
-  // } = useQuery({
-  //   queryKey: ['locationPositions'],
-  //   queryFn: async () => await getLocationPositionsAPI(mapId),
-  //   retry: false,
-  //   enabled: !!mapId
-  // })
+  // Fetch specific map roots (includes MapNode tree, expensive op)
+  const mapNodesQueries = useQueries({
+    queries: maps
+      ? maps.map((map) => {
+          return {
+            queryKey: ['maps', map.id],
+            queryFn: () => getMapNodesAPI(projectId, map.id),
+            enabled: !!projectId && map.id === mapId
+          }
+        })
+      : []
+  })
+
+  const { mutate: updateMapNode } = useMutation({
+    retry: false,
+    mutationFn: (args: { id: string; body: Partial<PrismaMapNode> }) => {
+      if (!mapId) throw new Error('No map id provided.')
+      return updateMapNodeAPI(projectId, mapId, args.id, args.body)
+    }
+    // TODO: update current query with new node structure
+  })
+
+  const map = maps?.find((map) => map.id === mapId)
+  const mapNodes: MapNodeRoot[] =
+    queryClient.getQueryData(['maps', mapId]) ?? []
 
   return {
-    maps,
-    isLoading,
-    error,
-    createMap
+    // DATA
+    maps, // All maps linked to user
+    map, // Current active map
+    mapNodes, // Current active map, location position tree
+    // ACTIONS
+    createMap,
+    updateMapNode
   }
 }
