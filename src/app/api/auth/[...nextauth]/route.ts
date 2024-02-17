@@ -34,7 +34,7 @@ const options: NextAuthOptions = {
           })
 
           const user = await res.json()
-          console.log('USER IS', user)
+          // console.log('USER IS', user)
 
           if (res.ok && user) {
             return user

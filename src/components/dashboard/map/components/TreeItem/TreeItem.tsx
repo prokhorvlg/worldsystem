@@ -23,6 +23,7 @@ export interface Props extends Omit<HTMLAttributes<HTMLLIElement>, 'id'> {
   onCollapse?(): void
   onRemove?(): void
   wrapperRef?(node: HTMLLIElement): void
+  children?: React.ReactNode
 }
 
 export const TreeItem = forwardRef<HTMLDivElement, Props>(
@@ -42,6 +43,7 @@ export const TreeItem = forwardRef<HTMLDivElement, Props>(
       onRemove,
       style,
       value,
+      children,
       wrapperRef,
       ...props
     },
@@ -78,7 +80,9 @@ export const TreeItem = forwardRef<HTMLDivElement, Props>(
               {collapseIcon}
             </Action>
           )}
-          <span className={styles.Text}>{value}</span>
+          {/* <span className={styles.Text}>{value}</span>
+          <button>hi this is a button</button> */}
+          {children}
           {!clone && onRemove && <Remove onClick={onRemove} />}
           {clone && childCount && childCount > 1 ? (
             <span className={styles.Count}>{childCount}</span>

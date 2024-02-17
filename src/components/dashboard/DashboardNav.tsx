@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import {
-  UnstyledButton,
   Tooltip,
   Title,
   rem,
@@ -11,29 +10,18 @@ import {
   Popover,
   Text
 } from '@mantine/core'
-import {
-  IconHome2,
-  IconGauge,
-  IconDeviceDesktopAnalytics,
-  IconFingerprint,
-  IconCalendarStats,
-  IconUser,
-  IconSettings,
-  IconMap,
-  IconLogout
-} from '@tabler/icons-react'
+import { IconHome2, IconMap, IconLogout } from '@tabler/icons-react'
 import { useDisclosure } from '@mantine/hooks'
 import { useRouter } from 'next/navigation'
-// import { MantineLogo } from '@mantinex/mantine-logo';
+import classes from './DashboardNav.module.css'
+import { signOut } from 'next-auth/react'
 
-const mainLinksMockdata = [
+const mainLinks = [
   { icon: IconHome2, label: 'Home', link: '/dashboard' },
   { icon: IconMap, label: 'Maps', link: '/dashboard/maps' }
 ]
 
-const linksMockdata = ['Map 1']
-
-export function SideNav({ user }: { user: any }) {
+export function DashboardNav({ user }: { user: any }) {
   const router = useRouter()
 
   const [active, setActive] = useState('Releases')
@@ -42,11 +30,11 @@ export function SideNav({ user }: { user: any }) {
   const [opened, { close, open }] = useDisclosure(false)
 
   return (
-    <nav className="flex flex-col items-center w-[60px] border-r border-white">
-      <p>logo</p>
+    <nav className={classes.nav}>
+      <div className={classes.logo}></div>
 
-      <div className="flex-1 flex flex-col">
-        {mainLinksMockdata.map((link) => (
+      <div className={classes.mainLinks}>
+        {mainLinks.map((link) => (
           <Tooltip
             label={link.label}
             position="right"
@@ -73,23 +61,17 @@ export function SideNav({ user }: { user: any }) {
         ))}
       </div>
 
-      <Popover
-        width={200}
-        position="right"
-        withArrow
-        shadow="md"
-        opened={opened}
-      >
+      <Popover position="right" withArrow shadow="md" opened={opened}>
         <Popover.Target>
-          <ActionIcon
-            size={42}
-            variant="subtle"
-            aria-label="Open Settings"
+          <Avatar
+            src={user.image}
+            alt="Profile image"
+            radius="xl"
+            variant="light"
+            // color="highlight"
             onMouseEnter={open}
             onMouseLeave={close}
-          >
-            <Avatar src={user.image} alt="Profile image" />
-          </ActionIcon>
+          />
         </Popover.Target>
         <Popover.Dropdown style={{ pointerEvents: 'none' }}>
           <div className="flex flex-row">
@@ -113,7 +95,13 @@ export function SideNav({ user }: { user: any }) {
         withArrow
         transitionProps={{ duration: 0 }}
       >
-        <ActionIcon size={42} variant="default" aria-label="Log out">
+        <ActionIcon
+          size={42}
+          variant="default"
+          aria-label="Log out"
+          mt="10"
+          onClick={() => signOut({ callbackUrl: '/' })}
+        >
           <IconLogout style={{ width: rem(24), height: rem(24) }} />
         </ActionIcon>
       </Tooltip>

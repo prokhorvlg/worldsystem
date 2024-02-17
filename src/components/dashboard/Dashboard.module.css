@@ -1,0 +1,10 @@
+.dashboard {
+  height: 100%;
+  display: flex;
+  flex-direction: row;
+}
+
+.body {
+  padding: 20px;
+  flex: 1;
+}

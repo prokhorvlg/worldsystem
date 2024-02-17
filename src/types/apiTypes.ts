@@ -13,5 +13,6 @@ export enum StatusCode {
 export enum Method {
   POST = 'POST',
   GET = 'GET',
-  PUT = 'PUT'
+  PUT = 'PUT',
+  DELETE = 'DELETE'
 }

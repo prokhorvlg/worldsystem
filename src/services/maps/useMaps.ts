@@ -34,6 +34,17 @@ const getMapNodesAPI = (
   }).then((data) => data.json())
 }
 
+const createMapNodeAPI = (
+  projectId: string,
+  mapId: number,
+  body: Partial<PrismaMapNode>
+): Promise<MapNodeRoot> => {
+  return fetch(`/api/projects/${projectId}/maps/${mapId}/mapNodes`, {
+    method: Method.POST,
+    body: JSON.stringify(body)
+  }).then((data) => data.json())
+}
+
 const updateMapNodeAPI = (
   projectId: string,
   mapId: number,
@@ -49,6 +60,19 @@ const updateMapNodeAPI = (
   ).then((data) => data.json())
 }
 
+const deleteMapNodeAPI = (
+  projectId: string,
+  mapId: number,
+  mapNodeId: string
+): Promise<MapNodeRoot[]> => {
+  return fetch(
+    `/api/projects/${projectId}/maps/${mapId}/mapNodes/${mapNodeId}`,
+    {
+      method: Method.DELETE
+    }
+  ).then((data) => data.json())
+}
+
 export const useMaps = ({ mapId }: { mapId?: number }) => {
   const queryClient = useQueryClient()
 
@@ -57,9 +81,9 @@ export const useMaps = ({ mapId }: { mapId?: number }) => {
   const projectId = projects ? projects[0].id : undefined
 
   // Fetch all maps
-  const { data: maps } = useQuery({
+  const { data: maps, status: mapsStatus } = useQuery({
     queryKey: ['maps'],
-    queryFn: () => getMapsAPI(projectId),
+    queryFn: () => getMapsAPI(projectId || ''),
     retry: false,
     enabled: !!projectId
   })
@@ -67,7 +91,8 @@ export const useMaps = ({ mapId }: { mapId?: number }) => {
   // Create map
   const { mutate: createMap } = useMutation({
     retry: false,
-    mutationFn: (body: Partial<PrismaMap>) => createMapAPI(projectId, body)
+    mutationFn: (body: Partial<PrismaMap>) =>
+      createMapAPI(projectId || '', body)
     // TODO: insert new map into query
   })
 
@@ -76,8 +101,8 @@ export const useMaps = ({ mapId }: { mapId?: number }) => {
     queries: maps
       ? maps.map((map) => {
           return {
-            queryKey: ['maps', map.id],
-            queryFn: () => getMapNodesAPI(projectId, map.id),
+            queryKey: ['mapNodes', map.id],
+            queryFn: () => getMapNodesAPI(projectId || '', map.id),
             enabled: !!projectId && map.id === mapId
           }
         })
@@ -88,22 +113,65 @@ export const useMaps = ({ mapId }: { mapId?: number }) => {
     retry: false,
     mutationFn: (args: { id: string; body: Partial<PrismaMapNode> }) => {
       if (!mapId) throw new Error('No map id provided.')
-      return updateMapNodeAPI(projectId, mapId, args.id, args.body)
+      return updateMapNodeAPI(projectId || '', mapId, args.id, args.body)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['mapNodes', map?.id]
+      })
+    }
+    // TODO: update current query with new node structure
+  })
+
+  const { mutate: createMapNode } = useMutation({
+    retry: false,
+    mutationFn: (body: Partial<PrismaMapNode>) => {
+      if (!mapId) throw new Error('No map id provided.')
+      return createMapNodeAPI(projectId || '', mapId, body)
+    },
+    onSuccess: (newMapNode: PrismaMapNode) => {
+      queryClient.invalidateQueries({
+        queryKey: ['mapNodes', map?.id]
+      })
+    }
+    // TODO: update current query with new node structure with return value
+  })
+
+  const { mutate: deleteMapNode } = useMutation({
+    retry: false,
+    mutationFn: (id: string) => {
+      if (!mapId) throw new Error('No map id provided.')
+      return deleteMapNodeAPI(projectId || '', mapId, id)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['mapNodes', map?.id]
+      })
     }
     // TODO: update current query with new node structure
   })
 
   const map = maps?.find((map) => map.id === mapId)
-  const mapNodes: MapNodeRoot[] =
-    queryClient.getQueryData(['maps', mapId]) ?? []
+  const mapNodes: MapNodeRoot[] | undefined = queryClient.getQueryData([
+    'mapNodes',
+    mapId
+  ])
+
+  const mapNodesStatus = queryClient.getQueryState(['mapNodes', mapId])?.status
+  const isReady = map && mapNodes
+  mapsStatus === 'success' || mapNodesStatus === 'success'
 
   return {
     // DATA
     maps, // All maps linked to user
     map, // Current active map
     mapNodes, // Current active map, location position tree
+    // STATUS
+    isReady,
     // ACTIONS
     createMap,
-    updateMapNode
+    createMapNode,
+    updateMapNode,
+    deleteMapNode
   }
 }

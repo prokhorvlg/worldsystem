@@ -27,7 +27,13 @@ export async function GET(request: Request, context: any) {
         maps: true
       }
     })
-    if (!project) return
+
+    console.log('hi!', project?.maps)
+
+    if (!project)
+      return new Response('No project found.', {
+        status: StatusCode.ServerError
+      })
 
     return new Response(JSON.stringify(project.maps), {
       status: StatusCode.OK
@@ -44,14 +50,15 @@ export interface CreateMapBody {
   name: string
 }
 
-export async function POST(request: Request) {
+export async function POST(request: Request, context: any) {
+  const projectId = context.params.projectId
   const body: CreateMapBody = await request.json()
 
   try {
     const map = await prisma.map.create({
       data: {
         name: body.name,
-        projectId: body.projectId
+        projectId: projectId
       }
     })
 

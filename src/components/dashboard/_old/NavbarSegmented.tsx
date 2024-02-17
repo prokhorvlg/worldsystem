@@ -23,7 +23,7 @@ import {
   IconTimeline
 } from '@tabler/icons-react'
 import classes from './NavbarSegmented.module.css'
-import { UserButton } from '@/components/dashboard/UserButton'
+import { UserButton } from '@/components/dashboard/_old/UserButton'
 
 const tabs = [
   // FEATURES

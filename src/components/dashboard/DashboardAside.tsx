@@ -1,7 +1,8 @@
 'use client'
-import classes from './SideSection.module.css'
+import { Title, Text } from '@mantine/core'
+import classes from './DashboardAside.module.css'
 
-const SideSection = ({
+const DashboardAside = ({
   children,
   header,
   footer
@@ -13,15 +14,13 @@ const SideSection = ({
   return (
     <div className={classes.container}>
       <div className={classes.header}>
-        <p>Map</p>
-        <h2>Locations</h2>
+        <Text>Map Editor</Text>
+        <Title>Kim's New Map</Title>
       </div>
       <div className={classes.body}>{children}</div>
-      <div className={classes.footer}>
-        <button>Add new</button>
-      </div>
+      <div className={classes.footer}></div>
     </div>
   )
 }
 
-export default SideSection
+export default DashboardAside

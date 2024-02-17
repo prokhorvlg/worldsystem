@@ -11,5 +11,5 @@ export default async function DashboardLayout({
     redirect('/login')
   }
 
-  return <section className="flex flex-row h-full">{children}</section>
+  return <>{children}</>
 }

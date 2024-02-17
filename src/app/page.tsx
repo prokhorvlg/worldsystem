@@ -1,8 +1,14 @@
+import Article from '@/components/Article'
+import { LandingHeader } from '@/components/home/LandingHeader'
+import { LandingHero } from '@/components/home/LandingHero'
+
 export default async function IndexPage() {
   return (
     <>
-      Welcome to World System! This is the landing page.
-      {/* {session ? (
+      <LandingHeader />
+      <Article>
+        <LandingHero />
+        {/* {session ? (
         <>
           {session.user?.image}
           <img src={session.user?.image || ''} />
@@ -14,6 +20,7 @@ export default async function IndexPage() {
       ) : (
         <>Not logged in. log in...</>
       )} */}
+      </Article>
     </>
   )
 }

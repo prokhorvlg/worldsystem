@@ -1,9 +1,14 @@
 'use client'
 
-import { SideNav } from '@/components/dashboard/SideNav'
+import { MapNodeRoot } from '@/app/api/projects/[projectId]/maps/[mapId]/mapNodes/route'
+import Dashboard from '@/components/dashboard/Dashboard'
 import { SortableTree } from '@/components/dashboard/map/SortableTree'
 import { useMaps } from '@/services/maps/useMaps'
+import { ActionIcon, Button, Text } from '@mantine/core'
+import { IconLocationPlus } from '@tabler/icons-react'
 import { useSession } from 'next-auth/react'
+import { useEffect } from 'react'
+import classes from './DashboardMap.module.css'
 
 const Wrapper = ({ children }: { children: React.ReactNode }) => (
   <div
@@ -20,43 +25,90 @@ const Wrapper = ({ children }: { children: React.ReactNode }) => (
 
 const DashboardMap = ({ mapId }: { mapId: number }) => {
   const { data: session } = useSession()
-  const { map, mapNodes, updateMapNode } = useMaps({ mapId })
+  const {
+    map,
+    mapNodes,
+    createMapNode,
+    updateMapNode,
+    deleteMapNode,
+    isReady
+  } = useMaps({ mapId })
 
+  // useEffect(() => {
+  //   console.log('map', map)
+  //   console.log('mapNodes', mapNodes)
+  // }, [mapNodes])
+
+  const renderItemComponent = (item: MapNodeRoot) => {
+    return (
+      <div className={classes.locationItem}>
+        <Text m={0}>{item.name}</Text>
+        <ActionIcon
+          variant="default"
+          onClick={() =>
+            createMapNode({
+              parentId: item.id,
+              name: item.name + ' child'
+            })
+          }
+        >
+          <IconLocationPlus
+            style={{ width: '70%', height: '70%' }}
+            stroke={1.5}
+          />
+        </ActionIcon>
+      </div>
+    )
+  }
+
+  if (!isReady) return <>loading...</>
   if (!map) return <>map does not exist!</>
 
   return (
-    <section className="flex flex-row h-full">
-      <SideNav user={session?.user} />
-      <div>{map.name}</div>
-      <Wrapper>
-        <SortableTree
-          collapsible
-          indicator
-          removable
-          defaultItems={mapNodes ?? []}
-          onDragEnd={(id: string, newParentId: string | null) =>
-            // console.log(
-            //   'DRAG ENDED. THIS ID:',
-            //   id,
-            //   'NEW PARENT IS',
-            //   newParentId
-            // )
-            updateMapNode({
-              id: id,
-              body: {
-                parentId: newParentId
-              }
+    <Dashboard>
+      <Dashboard.Nav user={session?.user} />
+      <Dashboard.Aside>
+        <div>{map.name}</div>
+        <Wrapper>
+          <SortableTree
+            collapsible
+            indicator
+            removable
+            items={mapNodes ?? []}
+            itemComponent={renderItemComponent}
+            onDragEnd={(id: string, newParentId: string | null) =>
+              // console.log(
+              //   'DRAG ENDED. THIS ID:',
+              //   id,
+              //   'NEW PARENT IS',
+              //   newParentId
+              // )
+              updateMapNode({
+                id: id,
+                body: {
+                  parentId: newParentId
+                }
+              })
+            }
+          />
+        </Wrapper>
+        <Button
+          onClick={() => {
+            createMapNode({
+              name: 'New map node'
             })
-          }
-        />
-      </Wrapper>
-      {/* <ul>
+          }}
+        >
+          Add new location node
+        </Button>
+        {/* <ul>
         {locations?.map((location) => (
           <li key={location.id}>{location.name}</li>
         ))}
       </ul>
       <button onClick={() => createLocation()}>Add Location</button> */}
-    </section>
+      </Dashboard.Aside>
+    </Dashboard>
   )
 }
 
