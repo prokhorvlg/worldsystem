@@ -9,6 +9,8 @@ import { IconLocationPlus } from '@tabler/icons-react'
 import { useSession } from 'next-auth/react'
 import { useEffect } from 'react'
 import classes from './DashboardMap.module.css'
+import MapViewer from '@/components/_common/MapViewer/MapViewer'
+import { Marker, Popup } from 'react-leaflet'
 
 const Wrapper = ({ children }: { children: React.ReactNode }) => (
   <div
@@ -108,6 +110,18 @@ const DashboardMap = ({ mapId }: { mapId: number }) => {
       </ul>
       <button onClick={() => createLocation()}>Add Location</button> */}
       </Dashboard.Aside>
+      <Dashboard.Body>
+        <MapViewer>
+          {mapNodes?.map((node, i) => {
+            return (
+              <Marker position={[45.505 + i, -0.09]}>
+                <Popup>{node.name}</Popup>
+              </Marker>
+              // <div>Hi!!</div>
+            )
+          })}
+        </MapViewer>
+      </Dashboard.Body>
     </Dashboard>
   )
 }

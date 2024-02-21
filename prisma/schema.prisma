@@ -58,13 +58,22 @@ model Location {
 }
 
 model MapNode {
-  id         String    @id @default(cuid())
+  id         String  @id @default(cuid())
   locationId Int?
   mapId      Int
   parentId   String?
-  name       String?
-  location   Location? @relation(fields: [locationId], references: [id])
-  map        Map       @relation(fields: [mapId], references: [id])
-  parent     MapNode?  @relation("NestedLocations", fields: [parentId], references: [id])
-  children   MapNode[] @relation("NestedLocations")
+
+  location Location? @relation(fields: [locationId], references: [id])
+  map      Map       @relation(fields: [mapId], references: [id])
+
+  parent   MapNode?  @relation("NestedLocations", fields: [parentId], references: [id])
+  children MapNode[] @relation("NestedLocations")
+
+  name String?
+
+  angle    Int?
+  distance Int?
+
+  x Int?
+  y Int?
 }
